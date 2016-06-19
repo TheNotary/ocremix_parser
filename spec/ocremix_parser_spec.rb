@@ -30,7 +30,7 @@ describe OcremixParser do
   end
 
   it 'can return an array of titles from an rss feed' do
-    titles = @mix_grabber.get_top_ten_file_names
+    titles = @mix_grabber.query_from_top_ten_rss_feed
 
     expect(titles.count).to eq 10
   end
