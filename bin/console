@@ -9,6 +9,14 @@ require "ocremix_parser"
 # (If you use this, don't forget to add pry to your Gemfile!)
 # require "pry"
 # Pry.start
+#
 
-require "irb"
-IRB.start
+
+OcremixParser.get_latest_remixes
+
+
+#require "irb"
+#IRB.start
+
+
+
