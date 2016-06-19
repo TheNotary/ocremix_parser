@@ -2,6 +2,7 @@ require "i18n"
 require 'figaro'
 require 'open-uri'
 require 'simple-rss'
+require 'nokogiri'
 
 require "ocremix_parser/version"
 
@@ -10,52 +11,69 @@ Figaro.load
 
 module OcremixParser
 
-  def self.get_latest_remixes
-    # pull down the latest file_names from the rss feed
-    top_ten_file_names = get_top_ten_file_names
+  class MixGrabber
 
-    mirror = ENV['file_mirrors'].split(" ").last
-    user_agent = '"Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:47.0) Gecko/20100101 Firefox/47.0"'
-
-    top_ten_file_names.each do |file_name|
-      source_path = "#{mirror}/#{file_name}"
-      target_location = "#{ENV['download_directory']}/#{file_name}"
-      next if File.exists? target_location
-
-      # Download with a progress bar...
-      # Wget user agent required (I have an odd firewall...)!
-      cmd = "wget #{source_path} -O #{target_location} -U #{user_agent}"
-      `#{cmd}`
+    def initialize
+      @user_agent = '"Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:47.0) Gecko/20100101 Firefox/47.0"'
+      @mirror = ENV['file_mirrors'].split(" ").last
     end
-  end
 
-  def self.convert_title_to_filename(string)
-    tag = "_OC_ReMix.mp3"
-    string = convert_foriegn_characters_to_en(string)
+    def get_latest_remixes
+      # pull down the latest file_names from the rss feed
+      top_ten_file_names = get_top_ten_file_names
 
-    string.gsub(" ", "_").gsub(/[^0-9A-Za-z_\-]/, "") + tag
-  end
 
-  def self.convert_foriegn_characters_to_en(string)
-    I18n.available_locales = [:en]
-    string = I18n.transliterate(string.force_encoding('utf-8'))
-  end
+      top_ten_file_names.each do |file_name|
+        source_path = "#{@mirror}/#{file_name}"
+        target_location = "#{ENV['download_directory']}/#{file_name}"
+        next if File.exists? target_location
 
-  def self.get_top_ten_file_names
-    rss = SimpleRSS.parse open(ENV['rss_feed'])
-    rss.entries.map {|e| convert_title_to_filename(e.title) }
-  end
-
-  # Not Used... handy if wget doesn't exist though...
-  def self.download_bad_way(target_location, source_path, user_agent)
-
-    # Download without a progress bar
-    File.open(target_location, "wb") do |saved_file|
-      # the following "open" is provided by open-uri
-      open("#{source_path}", "rb", 'User-Agent' => useragent) do |read_file|
-        saved_file.write(read_file.read)
+        # Download with a progress bar...
+        # Wget user agent required (I have an odd firewall...)!
+        cmd = "wget #{source_path} -O #{target_location} -U #{@user_agent}"
+        puts cmd
+        `#{cmd}`
       end
     end
+
+    def convert_title_to_filename(string)
+      tag = "_OC_ReMix.mp3"
+      string = convert_foriegn_characters_to_en(string)
+
+      string.gsub(" ", "_").gsub(/[^0-9A-Za-z_\-]/, "") + tag
+    end
+
+    def convert_foriegn_characters_to_en(string)
+      I18n.available_locales = [:en]
+      string = I18n.transliterate(string.force_encoding('utf-8'))
+    end
+
+    def get_top_ten_file_names
+      rss = SimpleRSS.parse open(ENV['rss_feed'])
+      rss.entries.map {|e| convert_title_to_filename(e.title) }
+    end
+
+    # Not Used... handy if wget doesn't exist though...
+    def download_bad_way(target_location, source_path, user_agent)
+
+      # Download without a progress bar
+      File.open(target_location, "wb") do |saved_file|
+        # the following "open" is provided by open-uri
+        open("#{source_path}", "rb", 'User-Agent' => useragent) do |read_file|
+          saved_file.write(read_file.read)
+        end
+      end
+    end
+
+
+    # e.g. pass in http://ocremix.org/remix/OCR03341
+    def convert_track_page_to_mp3_links(url)
+      doc = Nokogiri.parse( open(url, "rb", 'User-Agent' => @user_agent).read )
+      li_mirrors = doc.css("#panel-download > div:nth-child(1) > ul:nth-child(4) > li")
+      download_links = li_mirrors.collect {|li| li.css("a").first["href"] }
+    end
+
+    # "#panel-download > div:nth-child(1) > ul:nth-child(4) > li:nth-child(3) > a:nth-child(1)"
   end
 
 end
