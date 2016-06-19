@@ -14,4 +14,10 @@ describe OcremixParser do
   it 'can convert a title to a download name' do
     expect(OcremixParser.convert_title_to_filename(@title_string)).to eq(@download_file_name)
   end
+
+  it 'can return an array of titles from an rss feed' do
+    titles = OcremixParser.get_top_ten_file_names
+
+    expect(titles.count).to eq 10
+  end
 end

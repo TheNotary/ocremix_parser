@@ -1,4 +1,6 @@
 
 
 rss_feed: "http://ocremix.org/feeds/ten20/"
-file_mirrors: "http://ocr.blueblue.fr/files/music/remixes/, http://iterations.org/files/music/remixes/ http://ocrmirror.org/files/music/remixes/"
+file_mirrors: "http://ocr.blueblue.fr/files/music/remixes http://iterations.org/files/music/remixes http://ocrmirror.org/files/music/remixes"
+
+download_directory: "/storage/storage/ocremix"
