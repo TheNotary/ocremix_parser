@@ -1,3 +1,4 @@
+require "i18n"
 require 'figaro'
 require 'open-uri'
 require 'simple-rss'
@@ -14,6 +15,7 @@ module OcremixParser
     top_ten_file_names = get_top_ten_file_names
 
     mirror = ENV['file_mirrors'].split(" ").last
+    user_agent = '"Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:47.0) Gecko/20100101 Firefox/47.0"'
 
     top_ten_file_names.each do |file_name|
       source_path = "#{mirror}/#{file_name}"
@@ -22,14 +24,21 @@ module OcremixParser
 
       # Download with a progress bar...
       # Wget user agent required (I have an odd firewall...)!
-      cmd = "wget #{source_path} -O #{target_location}"
+      cmd = "wget #{source_path} -O #{target_location} -U #{user_agent}"
       `#{cmd}`
     end
   end
 
   def self.convert_title_to_filename(string)
     tag = "_OC_ReMix.mp3"
+    string = convert_foriegn_characters_to_en(string)
+
     string.gsub(" ", "_").gsub(/[^0-9A-Za-z_\-]/, "") + tag
+  end
+
+  def self.convert_foriegn_characters_to_en(string)
+    I18n.available_locales = [:en]
+    string = I18n.transliterate(string.force_encoding('utf-8'))
   end
 
   def self.get_top_ten_file_names
@@ -37,9 +46,8 @@ module OcremixParser
     rss.entries.map {|e| convert_title_to_filename(e.title) }
   end
 
-  # Not Used...
-  def self.download_bad_way(target_location, source_path)
-    useragent = "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:47.0) Gecko/20100101 Firefox/47.0"
+  # Not Used... handy if wget doesn't exist though...
+  def self.download_bad_way(target_location, source_path, user_agent)
 
     # Download without a progress bar
     File.open(target_location, "wb") do |saved_file|
