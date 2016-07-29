@@ -21,7 +21,7 @@ module OcremixParser
       @downloads = 0
     end
 
-    def download_ten_latest_mixes_via_web_scraps
+    def download_ten_latest_mixes_via_web_scrapes
       top_ten_track_page_links = query_from_top_ten_rss_feed(:link)
 
       top_ten_track_page_links.each do |page_url|

@@ -15,7 +15,7 @@ mg = OcremixParser::MixGrabber.new
 
 # mg.download_ten_latest_remixes_via_filename_guessing
 
-mg.download_ten_latest_mixes_via_web_scraps
+mg.download_ten_latest_mixes_via_web_scrapes
 
 #require "irb"
 #IRB.start
