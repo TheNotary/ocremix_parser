@@ -7,8 +7,6 @@ require 'fileutils'
 
 require "ocremix_parser/version"
 
-
-
 module OcremixParser
 
   class MixGrabber
