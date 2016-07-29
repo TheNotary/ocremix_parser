@@ -1,24 +1,40 @@
-require "i18n"
+require 'i18n'
 require 'figaro'
 require 'open-uri'
 require 'simple-rss'
 require 'nokogiri'
+require 'fileutils'
 
 require "ocremix_parser/version"
 
-Figaro.application.path = File.expand_path('../../config/application.yml', __FILE__)
-Figaro.load
+
 
 module OcremixParser
 
   class MixGrabber
 
     def initialize
+      prepare_config_file!
+
       @user_agent = '"Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:47.0) Gecko/20100101 Firefox/47.0"'
       @mirror = ENV['file_mirrors'].split(" ").last
 
       @skips = 0
       @downloads = 0
+    end
+
+    def prepare_config_file!
+      bundled_config_path = File.expand_path('../../config/application.yml', __FILE__)
+      config_path = "#{ENV['HOME']}/.config/ocremix_parser.yml"
+
+      # create the config file unless it exists
+      unless File.exists?(config_path)
+        FileUtils.mkdir_p File.dirname(config_path)
+        FileUtils.cp bundled_config_path, config_path
+      end
+
+      Figaro.application.path = config_path
+      Figaro.load
     end
 
     def download_ten_latest_mixes_via_web_scrapes

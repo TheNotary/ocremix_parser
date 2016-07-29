@@ -1,0 +1,10 @@
+#!/usr/bin/env ruby
+
+require 'ocremix_parser'
+
+# TODO: add thor and use interface like:  list, start 
+
+mg = OcremixParser::MixGrabber.new
+
+mg.download_ten_latest_mixes_via_web_scrapes
+
